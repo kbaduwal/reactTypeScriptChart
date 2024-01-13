@@ -12,6 +12,7 @@ import {
 } from 'echarts/components';
 import { BarChart, BarSeriesOption } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 echarts.use([
   TitleComponent,
@@ -21,6 +22,7 @@ echarts.use([
   BarChart,
   CanvasRenderer
 ]);
+
 
 type EChartsOption = echarts.ComposeOption<
   | TitleComponentOption
@@ -41,14 +43,24 @@ const EChartComponent: React.FC<EChartComponentProps> = () => {
     if (chartRef.current) {
       const myChart = echarts.init(chartRef.current);
 
+      const HighPerformer = [34,56,55,66,67,52,42,52,14];
+      const Resignation = [11,33,50,81,43,27,8,21,43];
+
+      // Calculate percentages
+      const totalHighPerformer = HighPerformer.reduce((sum, value) => sum + value, 0);
+      const totalResignation = Resignation.reduce((sum, value) => sum + value, 0);
+
+      const percentageHighPerformer = HighPerformer.map((value) => (value / totalHighPerformer) * 100);
+      const percentageResignation = Resignation.map((value) => (value / totalResignation) * 100);
+
       const option: EChartsOption = {
-        title: {
-          text: 'World Population'
-        },
         tooltip: {
           trigger: 'axis',
           axisPointer: {
             type: 'shadow'
+          },
+          formatter: function (params: any) {
+            return `${params[0].name}: ${params[0].value.toFixed(2)}%`;
           }
         },
         legend: {},
@@ -61,10 +73,17 @@ const EChartComponent: React.FC<EChartComponentProps> = () => {
         xAxis: {
           type: 'value',
           boundaryGap: [0, 0.01],
+          axisLabel: {
+            formatter: function (value: number) {
+              return `${(value).toFixed(2)}%`;
+            },
+            rotate: 0, 
+            
+          },
           axisLine: {
-            show: true, // Set to true to show the x-axis line
+            show: true,
             lineStyle: {
-              color: '#333' // You can customize the color of the x-axis line
+              color: '#333'
             }
           }
         },
@@ -74,14 +93,34 @@ const EChartComponent: React.FC<EChartComponentProps> = () => {
         },
         series: [
           {
-            name: '2011',
+            name: 'High Performer',
             type: 'bar',
-            data: [18203, 23489, 29034, 104970, 131744, 630230]
+            data: percentageHighPerformer,
+            itemStyle: {
+              color: '#6DB9EF' 
+            },
+            label: {
+              show: true,
+              position: 'right',
+              formatter: function (params: any){
+                return `${params.value.toFixed(2)}%`;
+              }
+            }
           },
           {
-            name: '2012',
+            name: 'Resignation',
             type: 'bar',
-            data: [19325, 23438, 31000, 121594, 134141, 681807]
+            data: percentageResignation,
+            itemStyle: {
+              color: '#EE7214' 
+            },
+            label: {
+              show: true,
+              position: 'right',
+              formatter: function (params: any){
+                return `${params.value.toFixed(2)}%`;
+              }
+            }
           }
         ]
       };

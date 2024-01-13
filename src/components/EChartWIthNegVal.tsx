@@ -41,14 +41,47 @@ const EChartWithNegVal: React.FC<EChartWithNegValProps> = () => {
         position: 'right'
       } as const;
 
+      // Replace HighPerformer and Resignation with your actual data
+      const HighPerformer = [34,56,55,66,67,52,42,52,14];
+      const Resignation = [11,33,50,81,43,27,8,21,43];
+
+      // Calculate percentages
+      const totalHighPerformer = HighPerformer.reduce((sum, value) => sum + value, 0);
+      const totalResignation = Resignation.reduce((sum, value) => sum + value, 0);
+
+      const percentageHighPerformer = HighPerformer.map((value) => (value / totalHighPerformer) * 100);
+      const percentageResignation = Resignation.map((value) => (value / totalResignation) * 100);
+
+      // Calculate the percentage difference or provide your own logic
+      const percentageDifference = percentageHighPerformer.map((value, index) => value - percentageResignation[index]);
+
+      const seriesData = percentageDifference.map((diff, index) => ({
+        value: diff,
+        label: {
+          show: true,
+          position: diff > 0 ? 'right' : 'left',
+
+          formatter:function (params: any){
+                return `${params.value.toFixed(2)}%`;
+              }
+
+        } as any  // Use any type
+      }));
+
       const option: EChartsOption = {
-        title: {
-          text: 'Bar Chart with Negative Value'
-        },
         tooltip: {
           trigger: 'axis',
           axisPointer: {
             type: 'shadow'
+          },
+          formatter: (params: any) => {
+            const dataIndex = params[0].dataIndex;
+            const tooltipText = `
+              High Performer: ${HighPerformer[dataIndex]}<br/>
+              Resignation: ${Resignation[dataIndex]}<br/>
+              Difference: ${(percentageDifference[dataIndex] !== undefined ? percentageDifference[dataIndex].toFixed(2) : 'N/A')}%
+            `;
+            return tooltipText;
           }
         },
         grid: {
@@ -70,40 +103,13 @@ const EChartWithNegVal: React.FC<EChartWithNegValProps> = () => {
           axisLabel: { show: false },
           axisTick: { show: false },
           splitLine: { show: false },
-          data: [
-            'ten',
-            'nine',
-            'eight',
-            'seven',
-            'six',
-            'five',
-            'four',
-            'three',
-            'two',
-            'one'
-          ]
         },
         series: [
           {
             name: 'Cost',
             type: 'bar',
-            stack: 'Total',
-            label: {
-              show: true,
-              formatter: '{b}'
-            },
-            data: [
-              { value: -0.07, label: labelRight },
-              { value: -0.09, label: labelRight },
-              0.2,
-              0.44,
-              { value: -0.23, label: labelRight },
-              0.08,
-              { value: -0.17, label: labelRight },
-              0.47,
-              { value: -0.36, label: labelRight },
-              0.18
-            ]
+            stack: 'Total' as const,
+            data: seriesData
           }
         ]
       };
